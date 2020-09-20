@@ -2,7 +2,6 @@ package com.example.Config;
 
 import java.util.HashMap;
 
-
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -19,34 +18,30 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableJpaRepositories(entityManagerFactoryRef = "bookentityManagerFactoryBean",basePackages = {"com.example.Repo.book"},transactionManagerRef = "booktransactionManager" )
 @EnableTransactionManagement
-public class BookDBfactory {
+@EnableJpaRepositories(entityManagerFactoryRef = "bookEntityManagerFactory", transactionManagerRef = "bookTransactionManager", basePackages = {
+		"com.example.Repo.book" })
+public class BookDBConfig {
 
 	@Bean(name = "bookDataSource")
 	@ConfigurationProperties(prefix = "spring.book.datasource")
 	public DataSource dataSource() {
-
 		return DataSourceBuilder.create().build();
 	}
 
-	@Bean(name = "bookentityManagerFactoryBean")
-	public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder,
+	@Bean(name = "bookEntityManagerFactory")
+	public LocalContainerEntityManagerFactoryBean bookEntityManagerFactory(EntityManagerFactoryBuilder builder,
 			@Qualifier("bookDataSource") DataSource dataSource) {
-
-		HashMap<String, String> properties = new HashMap<>();
-		properties.put("hibernate.hbm2ddl.auto", "create");
-		properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-
-		return builder.dataSource(dataSource).properties(properties).packages("com.example.entity.book").persistenceUnit("Book")
-				.build();
-
+		HashMap<String, Object> properties = new HashMap<>();
+		properties.put("hibernate.hbm2ddl.auto", "update");
+		properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
+		return builder.dataSource(dataSource).properties(properties)
+				.packages("com.example.entity.book").persistenceUnit("Book").build();
 	}
 
-	@Bean(name = "booktransactionManager")
-	public PlatformTransactionManager transactionManager(
-			@Qualifier("bookentityManagerFactoryBean") EntityManagerFactory entityManagerFactory) {
-		return new JpaTransactionManager(entityManagerFactory);
-
+	@Bean(name = "bookTransactionManager")
+	public PlatformTransactionManager bookTransactionManager(
+			@Qualifier("bookEntityManagerFactory") EntityManagerFactory bookEntityManagerFactory) {
+		return new JpaTransactionManager(bookEntityManagerFactory);
 	}
 }

@@ -19,41 +19,32 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@EnableJpaRepositories(entityManagerFactoryRef = "userentityManagerFactoryBean", basePackages = {
-		"com.example.Repo.user" }, transactionManagerRef = "usertransactionManager")
 @EnableTransactionManagement
-public class UserDBfactory {
-
+@EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory", basePackages = {
+		"com.example.Repo.user" })
+public class UserDBConfig {
 	@Primary
-	@Bean(name = "userDataSource")
+	@Bean(name = "dataSource")
 	@ConfigurationProperties(prefix = "spring.user.datasource")
 	public DataSource dataSource() {
-
 		return DataSourceBuilder.create().build();
 	}
 
 	@Primary
-	@Bean(name = "userentityManagerFactoryBean")
-	public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder,
-			@Qualifier("userDataSource") DataSource dataSource) {
-
-		HashMap<String, String> properties = new HashMap<>();
-		properties.put("hibernate.hbm2ddl.auto", "create");
-		properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-		return builder.dataSource(dataSource).properties(properties).packages("com.example.entity.user")
-				.persistenceUnit("User").build();
-
+	@Bean(name = "entityManagerFactory")
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder,
+			@Qualifier("dataSource") DataSource dataSource) {
+		HashMap<String, Object> properties = new HashMap<>();
+		properties.put("hibernate.hbm2ddl.auto", "update");
+		properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
+		return builder.dataSource(dataSource).properties(properties)
+				.packages("com.example.entity.user").persistenceUnit("User").build();
 	}
 
 	@Primary
-	@Bean(name = "usertransactionManager")
+	@Bean(name = "transactionManager")
 	public PlatformTransactionManager transactionManager(
-			@Qualifier("userentityManagerFactoryBean") EntityManagerFactory entityManagerFactory) {
-		JpaTransactionManager txManager = new JpaTransactionManager();
-		txManager.setEntityManagerFactory(entityManagerFactory);
-		return txManager;
-
-		// return new JpaTransactionManager(entityManagerFactory);
-
+			@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
+		return new JpaTransactionManager(entityManagerFactory);
 	}
 }

@@ -3,6 +3,8 @@ package com.example.Controller;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,6 @@ import com.example.entity.book.Book;
 import com.example.entity.user.User;
 
 @RestController
-@ComponentScan(basePackages = "com.example.Repo.*")
 public class BookUserController {
 
 	@Autowired
@@ -24,7 +25,7 @@ public class BookUserController {
 	@Autowired
 	private UserRepo userRepo;
 
-	@PostMapping(path = "/add")
+	@PostConstruct
 	public void addData2DB() {
 
 		userRepo.saveAll(
